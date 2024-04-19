@@ -113,14 +113,32 @@
 
 
         // --------------------------------- Push Notification -----------------------------------
-        const messaging = getMessaging(app); //for Push Notification
+        const messaging = getMessaging(app);
 
 
-
+        // Service Worker registration for background notification handling
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('ServiceWorker.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                    return registration;
+                })
+                .then(registration => {
+                    const messaging = getMessaging(app);
+                    return getToken(messaging, { serviceWorkerRegistration: registration, vapidKey: 'BJFlUqKB7J0yF58sqhdaUhJHRpFh8v6i3LJdg80-X0728x2H-qyQhO3Q7LpC0w9uMlyGB0FBoW1dMP8xG0DexFI' });
+                })
+                .then(currentToken => {
+                    console.log('FCM Token:', currentToken);
+                })
+                .catch(err => {
+                    console.error('Service Worker or FCM token retrieval failed:', err);
+                });
+        }
 
         // Foreground notification handling
         onMessage(messaging, (payload) => {
             console.log('Foreground message received:', payload);
+            alert(payload.notification.body);
             const messageContent = payload.notification.body;
             const messageTime = new Date().toISOString();
             saveMessage(messageTime, messageContent);
@@ -132,23 +150,6 @@
             set(messagesRef, content)
                 .then(() => console.log('Message saved to database:', content))
                 .catch(error => console.error('Error saving message:', error));
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('ServiceWorker.js')
-                .then(registration => {
-                    console.log('Service Worker registered with scope:', registration.scope);
-                    getToken(messaging, { serviceWorkerRegistration: registration, vapidKey: 'your_vapid_key' })
-                        .then(currentToken => {
-                            console.log('FCM Token:', currentToken);
-                        })
-                        .catch(err => {
-                            console.error('Token retrieval failed:', err);
-                        });
-                })
-                .catch(error => {
-                    console.error('Service Worker registration failed:', error);
-                });
         }
 
     </script>
