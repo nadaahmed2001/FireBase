@@ -61,8 +61,7 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
-        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-messaging.js";
-        // Note: Can't use the structure "import { initializeApp } from 'firebase/app';" because we have
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-messaging.js";        // Note: Can't use the structure "import { initializeApp } from 'firebase/app';" because we have
         // used the type="module" in the script tag. So, we have to use the above structure to import the functions.
 
 
@@ -116,66 +115,41 @@
         // --------------------------------- Push Notification -----------------------------------
         const messaging = getMessaging(app); //for Push Notification
 
-        // messaging.onBackgroundMessage((payload) => {
-        //     console.log('Received background message:', payload);
-        //     // Customize notification
-        //     const notificationTitle = payload.data.title;
-        //     const notificationOptions = {
-        //         body: payload.data.body,
-        //         icon: payload.data.icon,
-        //         image: payload.data.image,
-        //         click_action: payload.data.click_action
-        //     };
-        //     self.registration.showNotification(notificationTitle, notificationOptions);
-        // });
-        
 
 
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('ServiceWorker.js').then(registration => {
-                    console.log('Service Worker registered with scope:', registration.scope);
-
-                    navigator.serviceWorker.addEventListener('message', event => {
-                        console.log('Received a message from service worker:', event.data);
-                        if (event.data.msg === 'Received a notification') {
-                            console.log('Notification data:', event.data.data);
-                            saveNotificationToFirebase(event.data.data);
-                        }
-                    });
-
-                    getToken(messaging, {
-                        serviceWorkerRegistration: registration,
-                        vapidKey: 'BJFlUqKB7J0yF58sqhdaUhJHRpFh8v6i3LJdg80-X0728x2H-qyQhO3Q7LpC0w9uMlyGB0FBoW1dMP8xG0DexFI'
-                    }).then(currentToken => {
-                        console.log('currentToken:', currentToken);
-                    }).catch(err => {
-                        console.error('An error occurred while retrieving token.', err);
-                    });
-
-                }).catch(error => {
-                    console.error('Service Worker registration failed:', error);
-                });
-            }
+        // Foreground notification handling
+        onMessage(messaging, (payload) => {
+            console.log('Foreground message received:', payload);
+            const messageContent = payload.notification.body;
+            const messageTime = new Date().toISOString();
+            saveMessage(messageTime, messageContent);
         });
 
-        function saveNotificationToFirebase(data) {
-            console.log('Attempting to save notification:', data);
-            const dbRef = firebase.database().ref('notifications');
-            dbRef.push({
-                title: data.title,
-                body: data.body,
-                image: data.image,
-                url: data.click_action,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                console.log('Notification saved to database successfully');
-            }).catch(error => {
-                console.error('Error saving notification to database:', error);
-            });
+        function saveMessage(time, content) {
+            console.log('Saving message:', content);
+            const messagesRef = ref(db, `messages/${time}`);
+            set(messagesRef, content)
+                .then(() => console.log('Message saved to database:', content))
+                .catch(error => console.error('Error saving message:', error));
         }
 
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('ServiceWorker.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                    getToken(messaging, { serviceWorkerRegistration: registration, vapidKey: 'your_vapid_key' })
+                        .then(currentToken => {
+                            console.log('FCM Token:', currentToken);
+                        })
+                        .catch(err => {
+                            console.error('Token retrieval failed:', err);
+                        });
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+        }
 
     </script>
 </body>
