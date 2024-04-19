@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Firebase CRUD</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        input {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <!------------------------------ Realetime Database ----------------------------------->
+    <label>First Name:</label>
+    <input type="text" id="firstName" placeholder="First Name">
+    <br>
+    <label>Last Name:</label>
+    <input type="text" id="lastName" placeholder="Last Name">
+    <br>
+    <label>Email:</label>
+    <input type="email" id="email" placeholder="Email">
+    <br>
+    <button id="add">Add</button>
+    <!-- <button id="update">Update</button>
+    <button id="delete">Delete</button> -->
+
+    <!------------------------------ Push Notefication ------------------------------>
+    <h1> Firebase Push Notefication</h1>
+
+
+
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-messaging.js";
+        // Note: Can't use the structure "import { initializeApp } from 'firebase/app';" because we have
+        // used the type="module" in the script tag. So, we have to use the above structure to import the functions.
+
+
+        const firebaseConfig = {
+
+            apiKey: "AIzaSyBu_e9y4AjhRfH3-O25p8WA8zm_7uHTMxA",
+            authDomain: "cloudlabtask-f97ef.firebaseapp.com",
+            databaseURL: "https://cloudlabtask-f97ef-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "cloudlabtask-f97ef",
+            storageBucket: "cloudlabtask-f97ef.appspot.com",
+            messagingSenderId: "280306113048",
+            appId: "1:280306113048:web:56e3718f9060aeaec9016d",
+            measurementId: "G-NGFGR47TZN"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); //for Realtime Database
+
+        let firstName = document.getElementById('firstName');
+        let lastName = document.getElementById('lastName');
+        let email = document.getElementById('email');
+
+        let add = document.getElementById('add');
+        // let update = document.getElementById('update');
+        // let del = document.getElementById('delete');
+
+
+        function addData(firstName, lastName, email) {
+            // const db = getDatabase();
+            set(ref(db, 'users/' + firstName), {
+                first_name: firstName,
+                last_name: lastName,
+                email: email
+            }).then(() => {
+                alert('Data Added Successfully');
+            }).catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        add.addEventListener('click',
+            () =>
+                addData(firstName.value, lastName.value, email.value),
+            console.log('First Name:', firstName.value),
+            console.log('Last Name:', lastName.value),
+            console.log('Email:', email.value)
+        );
+
+
+        // --------------------------------- Push Notification -----------------------------------
+        const messaging = getMessaging(app); //for Push Notification
+
+        // messaging.onBackgroundMessage((payload) => {
+        //     console.log('Received background message:', payload);
+        //     // Customize notification
+        //     const notificationTitle = payload.data.title;
+        //     const notificationOptions = {
+        //         body: payload.data.body,
+        //         icon: payload.data.icon,
+        //         image: payload.data.image,
+        //         click_action: payload.data.click_action
+        //     };
+        //     self.registration.showNotification(notificationTitle, notificationOptions);
+        // });
+        
+
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('ServiceWorker.js').then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+
+                    navigator.serviceWorker.addEventListener('message', event => {
+                        console.log('Received a message from service worker:', event.data);
+                        if (event.data.msg === 'Received a notification') {
+                            console.log('Notification data:', event.data.data);
+                            saveNotificationToFirebase(event.data.data);
+                        }
+                    });
+
+                    getToken(messaging, {
+                        serviceWorkerRegistration: registration,
+                        vapidKey: 'BJFlUqKB7J0yF58sqhdaUhJHRpFh8v6i3LJdg80-X0728x2H-qyQhO3Q7LpC0w9uMlyGB0FBoW1dMP8xG0DexFI'
+                    }).then(currentToken => {
+                        console.log('currentToken:', currentToken);
+                    }).catch(err => {
+                        console.error('An error occurred while retrieving token.', err);
+                    });
+
+                }).catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+            }
+        });
+
+        function saveNotificationToFirebase(data) {
+            console.log('Attempting to save notification:', data);
+            const dbRef = firebase.database().ref('notifications');
+            dbRef.push({
+                title: data.title,
+                body: data.body,
+                image: data.image,
+                url: data.click_action,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                console.log('Notification saved to database successfully');
+            }).catch(error => {
+                console.error('Error saving notification to database:', error);
+            });
+        }
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "notifications": {
+      ".write": "true",
+      ".read": "true"
+    },
+    ".read": "now < 1713909600000",
+    ".write": "now < 1713909600000"
+  }
+}
