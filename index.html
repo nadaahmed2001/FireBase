@@ -126,7 +126,11 @@
                 })
                 .then(registration => {
                     const messaging = getMessaging(app);
+<<<<<<< HEAD
                     return getToken(messaging, { serviceWorkerRegistration: registration, vapidKey: 'BP4IdX6_gQFsYbqInezaM0E-i9kN4AavAsAH-cDsyHS_i8nlHKdVmKv9QKbgYUO0Ljy5NVY6p71EBEkoKGcv_Zc' });
+=======
+                    return getToken(messaging, { serviceWorkerRegistration: registration, vapidKey: 'BJFlUqKB7J0yF58sqhdaUhJHRpFh8v6i3LJdg80-X0728x2H-qyQhO3Q7LpC0w9uMlyGB0FBoW1dMP8xG0DexFI' });
+>>>>>>> b796f0c30915a0564a6ce216af2d79577af58e41
                 })
                 .then(currentToken => {
                     console.log('FCM Token:', currentToken);
