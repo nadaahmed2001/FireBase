@@ -66,16 +66,16 @@
 
 
         const firebaseConfig = {
-
-            apiKey: "YOUR KEY",
-            authDomain: "YOUR AUTH DOMAIN",
-            databaseURL: "YOUR DATABASE URL",
-            projectId: "YOUR PROJECT ID",
-            storageBucket: "YOUR STORAGE BUCKET URL",
-            messagingSenderId: "YOUR MESSAGING SENDER ID",
-            appId: "YOUR APP ID",
-            measurementId: "YOUR MEASUREMENT ID"
+            apiKey: "AIzaSyBu_e9y4AjhRfH3-O25p8WA8zm_7uHTMxA",
+            authDomain: "cloudlabtask-f97ef.firebaseapp.com",
+            databaseURL: "https://cloudlabtask-f97ef-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "cloudlabtask-f97ef",
+            storageBucket: "cloudlabtask-f97ef.appspot.com",
+            messagingSenderId: "280306113048",
+            appId: "1:280306113048:web:56e3718f9060aeaec9016d",
+            measurementId: "G-NGFGR47TZN"
         };
+
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -101,26 +101,45 @@
             }).catch((error) => {
                 console.error('Error:', error);
             });
+
         }
 
-        add.addEventListener('click',
-            () =>
-                addData(firstName.value, lastName.value, email.value),
-            console.log('First Name:', firstName.value),
-            console.log('Last Name:', lastName.value),
-            console.log('Email:', email.value)
-        );
+        add.addEventListener('click', function () {
+            addData(firstName.value, lastName.value, email.value);
+            console.log('First Name:', firstName.value);
+            console.log('Last Name:', lastName.value);
+            console.log('Email:', email.value);
+        });
+
 
 
         // --------------------------------- Push Notification -----------------------------------
-        const messaging = getMessaging(app); //for Push Notification
+        const messaging = getMessaging(app);
 
 
-
+        // Service Worker registration for background notification handling
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('ServiceWorker.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                    return registration;
+                })
+                .then(registration => {
+                    const messaging = getMessaging(app);
+                    return getToken(messaging, { serviceWorkerRegistration: registration, vapidKey: 'BP4IdX6_gQFsYbqInezaM0E-i9kN4AavAsAH-cDsyHS_i8nlHKdVmKv9QKbgYUO0Ljy5NVY6p71EBEkoKGcv_Zc' });
+                })
+                .then(currentToken => {
+                    console.log('FCM Token:', currentToken);
+                })
+                .catch(err => {
+                    console.error('Service Worker or FCM token retrieval failed:', err);
+                });
+        }
 
         // Foreground notification handling
         onMessage(messaging, (payload) => {
             console.log('Foreground message received:', payload);
+            alert(payload.notification.body);
             const messageContent = payload.notification.body;
             const messageTime = new Date().toISOString();
             saveMessage(messageTime, messageContent);
@@ -132,23 +151,6 @@
             set(messagesRef, content)
                 .then(() => console.log('Message saved to database:', content))
                 .catch(error => console.error('Error saving message:', error));
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('ServiceWorker.js')
-                .then(registration => {
-                    console.log('Service Worker registered with scope:', registration.scope);
-                    getToken(messaging, { serviceWorkerRegistration: registration, vapidKey: 'your_vapid_key' })
-                        .then(currentToken => {
-                            console.log('FCM Token:', currentToken);
-                        })
-                        .catch(err => {
-                            console.error('Token retrieval failed:', err);
-                        });
-                })
-                .catch(error => {
-                    console.error('Service Worker registration failed:', error);
-                });
         }
 
     </script>
