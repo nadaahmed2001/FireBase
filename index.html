@@ -61,19 +61,20 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-messaging.js";        // Note: Can't use the structure "import { initializeApp } from 'firebase/app';" because we have
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-messaging.js";
+        // Note: Can't use the structure "import { initializeApp } from 'firebase/app';" because we have
         // used the type="module" in the script tag. So, we have to use the above structure to import the functions.
 
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBu_e9y4AjhRfH3-O25p8WA8zm_7uHTMxA",
-            authDomain: "cloudlabtask-f97ef.firebaseapp.com",
-            databaseURL: "https://cloudlabtask-f97ef-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId: "cloudlabtask-f97ef",
-            storageBucket: "cloudlabtask-f97ef.appspot.com",
-            messagingSenderId: "280306113048",
-            appId: "1:280306113048:web:56e3718f9060aeaec9016d",
-            measurementId: "G-NGFGR47TZN"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
         };
 
 
